@@ -1,0 +1,23 @@
+﻿@using PaylocityDemoWeb.ViewModels.BenefitsCosts
+@model EmployeeViewModel
+@{
+    for (int i = 0; i < Model.Dependents.Count; i++)
+    {     
+        <div class="form-row">
+            <div class="form-group col-md-5">
+                <label for="Dependents[@(i.ToString())].DependentFirstName">First Name</label>
+                <input asp-for="@Model.Dependents[i].DependentFirstName" class="form-control" id="Dependents[@(i.ToString())].DependentFirstName" placeholder="First Name">
+                <span asp-validation-for="@Model.Dependents[i].DependentFirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-5">
+                <label for="Dependents[@(i.ToString())].DependentLastName">Last Name</label>
+                <input asp-for="@Model.Dependents[i].DependentLastName" class="form-control" id="Dependents[@(i.ToString())].DependentLastName" placeholder="Last Name">
+                <span asp-validation-for="@Model.Dependents[i].DependentLastName" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-2">
+                <label for="RemoveDependents@(i.ToString())"></label>
+                <button id="RemoveDependents@(i.ToString())" type="button" class="btn btn-link form-control">Remove</button>
+            </div>
+        </div>
+    }
+}

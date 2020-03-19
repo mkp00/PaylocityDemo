@@ -1,0 +1,137 @@
+﻿@model PaylocityDemoWeb.ViewModels.BenefitsCosts.EmployeeViewModel
+
+@{
+    ViewData["Title"] = "Calculate";
+}
+
+<h1>Calculate Cost</h1>
+
+<div class="row">
+    <div class="col-lg-12">
+        <form asp-action="Calculate">
+            <div class="card">
+                @{
+                    if (Model != null && Model.BenefitCostPerPayPeriod.HasValue)
+                    {
+                        <h5 class="card-header">Cost Per Pay Period: @Model.BenefitCostPerPayPeriod.Value.ToString("C")</h5>
+                    }
+                }
+                <div class="card-body">
+                    <h5 class="card-title">Employee</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label asp-for="EmployeeFirstName">First Name</label>
+                            <input asp-for="EmployeeFirstName" class="form-control" placeholder="First Name">
+                            <span asp-validation-for="EmployeeFirstName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-5">
+                            <label asp-for="EmployeeLastName">Last Name</label>
+                            <input asp-for="EmployeeLastName" class="form-control" placeholder="Last Name">
+                            <span asp-validation-for="EmployeeLastName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <h5 class="card-title">Dependents</h5>
+                    <div class="form-row">
+                        <button id="AddDependent" type="button" class="btn btn-link">Add</button>
+                    </div>
+                    <div id="DependentsContainer">
+                        @{
+                            if (Model != null && Model.Dependents != null)
+                            {
+                                await Html.RenderPartialAsync("_DependentInputPartial");
+                            }
+                        }
+                    </div>
+                    <input type="submit" value="Calculate" class="btn btn-sm btn-success" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts
+{
+    <script type="text/javascript">
+        var index = 0;
+        $(document).ready(function() {
+
+            var btns = $("button[id^='RemoveDependent']");
+                index = btns.length;
+                btns.each(function(index) {
+                    console.log("button index: " + index);
+                    $(this).attr("onclick", "removeDependent(this)");
+                });
+
+            $("#AddDependent").click(function() {
+                var i = index;
+                index++;
+                var container = $("#DependentsContainer");
+
+                var cardHeader = $(".card-header");
+                if (cardHeader.length > 0) {
+                    cardHeader.remove();
+                }
+
+                $.get("/BenefitsCost/GetDependentView",
+                    function(data, status) {
+                        var str = data.replace(/Dependents\[0/g, "Dependents[" + i);
+                        str = str.replace(/Dependents0/g, "Dependents" + i);
+                        console.log(str);
+                        var html = $.parseHTML(str);
+                        console.log(html);
+                        container.append(html);
+                        $("#RemoveDependents" + i).attr("onclick", "removeDependent(this)");
+                    });
+            });
+        });
+
+        function removeDependent(button) {
+            $(button).parent().parent().remove();
+            //Re-order index values for asp.net model binding
+            var firstNameLabels = $("label[for$='].DependentFirstName']");
+            firstNameLabels.each(function (index) {
+                $(this).attr("for", "Dependents[" + index + "].DependentFirstName");
+            });
+            var firstNames = $("input[name$='].DependentFirstName']");
+            firstNames.each(function (index) {
+                $(this).attr("name", "Dependents[" + index + "].DependentFirstName");
+                $(this).attr("id", "Dependents[" + index + "].DependentFirstName");
+            });
+            var firstNameSpans = $("span[data-valmsg-for$='].DependentFirstName']");
+            firstNameSpans.each(function (index) {
+                $(this).attr("for", "Dependents[" + index + "].DependentFirstName");
+                $(this).attr("data-valmsg-for", "Dependents[" + index + "].DependentFirstName");
+            });
+
+            var lastNameLabels = $("label[for$='].DependentLastName']");
+            lastNameLabels.each(function (index) {
+                $(this).attr("for", "Dependents[" + index + "].DependentLastName");
+            });
+            var lastNames = $("input[name$='].DependentLastName']");
+                lastNames.each(function (index) {
+                    $(this).attr("name", "Dependents[" + index + "].DependentLastName");
+                    $(this).attr("id", "Dependents[" + index + "].DependentLastName");
+                });
+            var lastNameSpans = $("span[data-valmsg-for$='].DependentLastName']");
+            lastNameSpans.each(function (index) {
+                $(this).attr("for", "Dependents[" + index + "].DependentLastName");
+                $(this).attr("data-valmsg-for", "Dependents[" + index + "].DependentLastName");
+            });
+
+            var removeLabels = $("label[for^='RemoveDependents']");
+            removeLabels.each(function (index) {
+                $(this).attr("for", "RemoveDependents" + index);
+            });
+            var removeButtons = $("button[id^='RemoveDependents']");
+            removeButtons.each(function (index) {
+                $(this).attr("id", "RemoveDependents" + index);
+            });
+
+            var cardHeader = $(".card-header");
+            if (cardHeader.length > 0) {
+                cardHeader.remove();
+            }
+            index--;
+        }
+    </script>
+}
